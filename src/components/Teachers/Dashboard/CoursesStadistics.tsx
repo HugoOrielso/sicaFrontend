@@ -7,8 +7,8 @@ const CoursesStadistics = () => {
     const { statsByCurso } = useDocenteStore()
 
     return (
-        <div className="        ">
-            <Card>
+        <div className="min-h-[600px] ">
+            <Card className="    h-full">
                 <CardHeader>
                     <CardTitle>Resumen de Cursos</CardTitle>
                 </CardHeader>

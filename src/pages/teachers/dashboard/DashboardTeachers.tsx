@@ -21,7 +21,6 @@ const DashboardTeachers = () => {
       <div className='grid grid-cols-2 w-full '>
         <CoursesStadistics/>
       </div>
-
     </Layout>
   )
 }

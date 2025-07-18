@@ -29,8 +29,9 @@ const Main = () => {
     const onSubmit = async (data: FormData) => {
         try {
             const request = await loginRequest(data.email, data.password);
-
+            
             localStorage.setItem("accessToken", request.accessToken);
+            localStorage.setItem("userName", request.user.name);
 
             toast.success("Login exitoso")
             if (request.user.rol === "administrador") {

@@ -1,10 +1,19 @@
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '../ui/sidebar'
-import { BarChart3, BookOpen, Calendar, ChevronDown, LogOut, Settings, TrendingDown, User, Users } from 'lucide-react'
+import { BarChart3, BookOpen, Calendar, ChevronDown, LogOut, User, Users } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '../ui/dropdown-menu'
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import api from '@/axios/axios'
 
 const SideBar = () => {
-
+    const userName = localStorage.getItem("userName")
+    async function closeSession() {
+        const request = await api.post('/users/logout')
+        if(request.data.status === 'ok') {
+            localStorage.removeItem("userName")
+            localStorage.removeItem("token")
+            window.location.href = "/login"
+        }
+    }
     return (
         <SidebarProvider>
             <SidebarTrigger />
@@ -28,14 +37,18 @@ const SideBar = () => {
                             <SidebarMenu>
                                 <SidebarMenuItem>
                                     <SidebarMenuButton isActive className="data-[active=true]:bg-red-50 data-[active=true]:text-red-700">
-                                        <BarChart3 className="w-4 h-4" />
-                                        <span>Dashboard</span>
+                                        <a href="/docentes" className='flex items-center gap-2  w-full'>
+                                            <BarChart3 className="w-4 h-4" />
+                                            <span>Dashboard</span>
+                                        </a>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                                 <SidebarMenuItem>
                                     <SidebarMenuButton className="hover:bg-red-50 hover:text-red-700">
-                                        <Users className="w-4 h-4" />
-                                        <span>Mis Cursos</span>
+                                        <a href="/docentes/cursos" className='flex items-center gap-2  w-full'>
+                                            <Users className="w-4 h-4" />
+                                            <span>Mis Cursos</span>
+                                        </a>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                                 <SidebarMenuItem>
@@ -44,12 +57,6 @@ const SideBar = () => {
                                             <Calendar className="w-4 h-4" />
                                             <span>Asistencia</span>
                                         </a>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
-                                <SidebarMenuItem>
-                                    <SidebarMenuButton className="hover:bg-red-50 hover:text-red-700">
-                                        <TrendingDown className="w-4 h-4" />
-                                        <span>Reportes</span>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                             </SidebarMenu>
@@ -65,7 +72,7 @@ const SideBar = () => {
                                     <SidebarMenuButton className="hover:bg-red-50">
                                         <User className="w-4 h-4" />
                                         <div className="flex flex-col items-start">
-                                            <span className="text-sm font-medium">Prof. García</span>
+                                            <span className="text-sm font-medium">Prof. {userName}</span>
                                             <span className="text-xs text-muted-foreground">Docente</span>
                                         </div>
                                         <ChevronDown className="ml-auto w-4 h-4" />
@@ -74,12 +81,8 @@ const SideBar = () => {
                                 <DropdownMenuContent side="top" className="w-[--radix-popper-anchor-width]">
                                     <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
                                     <DropdownMenuSeparator />
-                                    <DropdownMenuItem>
-                                        <Settings className="w-4 h-4 mr-2" />
-                                        Configuración
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem>
-                                        <LogOut className="w-4 h-4 mr-2" />
+                                    <DropdownMenuItem onClick={()=>{closeSession()}}>
+                                        <LogOut   className="w-4 h-4 mr-2" />
                                         Cerrar Sesión
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>

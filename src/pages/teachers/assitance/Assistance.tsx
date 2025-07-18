@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Calendar, CheckCircle, Clock, Save, Users, XCircle } from "lucide-react"
+import { CheckCircle, Clock, Save, Users, XCircle } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { useEffect, useState } from "react"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -67,7 +67,6 @@ const Assistance = () => {
             .toUpperCase()
     }
 
-
     const presentCount = Object.values(attendance).filter(Boolean).length
     return (
         <Layout>
@@ -79,21 +78,8 @@ const Assistance = () => {
                             <p className="text-gray-600">Registra la asistencia de estudiantes por curso</p>
                         </div>
                     </div>
-                    <div className="flex gap-2">
-                        <Button variant="outline">
-                            <Calendar className="h-4 w-4 mr-2" />
-                            Historial
-                        </Button>
-                        <Button className="bg-red-600 hover:bg-red-700">
-                            <Save className="h-4 w-4 mr-2" />
-                            Guardar Asistencia
-                        </Button>
-                    </div>
                 </div>
-
                 <Stats />
-
-                {/* Course Selection */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Seleccionar Curso</CardTitle>
@@ -132,7 +118,6 @@ const Assistance = () => {
                     </CardContent>
                 </Card>
 
-                {/* Attendance List */}
                 {selectedCourseId && (
                     <Card>
                         <CardHeader>

@@ -42,3 +42,25 @@ export interface PayloadGuardarAsistencia {
   curso_id: string;
   registros: RegistroAsistencia[];
 }
+
+
+export interface SpecificCourse {
+  curso_id: string
+  curso_nombre: string
+  horario: string
+  fecha_inicio: string
+  fecha_fin: string
+  estudiantes: {
+    estudiante_id: string
+    nombre: string
+    email: string
+    tipo_asistencia?: 'asistencia' | 'inasistencia' | 'retraso' | null
+  }[]
+  asistencia_hoy: {
+    asistencia: number
+    inasistencia: number
+    retraso: number
+  }
+}
+
+

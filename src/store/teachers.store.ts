@@ -1,6 +1,6 @@
 // src/store/useDocenteStore.ts
 import api from '@/axios/axios'
-import type { Course, CursoConEstudiantes, CursoStats } from '@/types'
+import type { Course, CursoConEstudiantes, CursoStats, SpecificCourse } from '@/types'
 import { create } from 'zustand'
 
 
@@ -13,11 +13,13 @@ interface DocenteState {
     statsAssistance: { asistencia: number, inasistencia: number, retraso: number }
     statsByCurso: CursoStats[]
     cousesWithStudentsByTeacer: CursoConEstudiantes[]
+    specificCourse: SpecificCourse | null
     fetchCursos: () => Promise<void>
     fetchTotalStudents: () => Promise<void>
     fetchStatsAssistance: () => Promise<void>
     fetchStatsAssistanceByCourse: () => Promise<void>
     fetchCoursesWithStudentsbyTeacher: () => Promise<void>
+    fetchCourseWithStudentsbyTeacherAndId: (id: string) => Promise<void>
 }
 
 export const useDocenteStore = create<DocenteState>((set) => ({
@@ -29,6 +31,7 @@ export const useDocenteStore = create<DocenteState>((set) => ({
     statsAssistance: { asistencia: 0, inasistencia: 0, retraso: 0 },
     statsByCurso: [],
     cousesWithStudentsByTeacer: [],
+    specificCourse: null,
     fetchCursos: async () => {
         set({ loading: true, error: null });
         try {
@@ -39,7 +42,6 @@ export const useDocenteStore = create<DocenteState>((set) => ({
             set({ error: errorMsg, loading: false });
         }
     },
-
     fetchTotalStudents: async () => {
         set({ loading: true, error: null });
         try {
@@ -50,7 +52,6 @@ export const useDocenteStore = create<DocenteState>((set) => ({
             set({ error: errorMsg, loading: false });
         }
     },
-
     fetchStatsAssistance: async () => {
         set({ loading: true, error: null });
         try {
@@ -106,6 +107,22 @@ export const useDocenteStore = create<DocenteState>((set) => ({
 
             set({ cousesWithStudentsByTeacer: res.data.cursos, loading: false });
 
+        } catch (err: unknown) {
+            const errorMsg = err instanceof Error ? err.message : 'Error al cargar asistencia por curso';
+            set({ error: errorMsg, loading: false });
+        }
+    },
+    fetchCourseWithStudentsbyTeacherAndId: async (id: string) => {
+        set({ loading: true, error: null });
+        try {
+            const res = await api.get('/docentes/curso/' + id);
+
+            if (res.status === 204 || !res.data?.curso) {
+                set({ specificCourse: null, loading: false });
+                return;
+            }
+
+            set({ specificCourse: res.data.curso, loading: false });
         } catch (err: unknown) {
             const errorMsg = err instanceof Error ? err.message : 'Error al cargar asistencia por curso';
             set({ error: errorMsg, loading: false });
