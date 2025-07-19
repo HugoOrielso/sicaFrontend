@@ -2,48 +2,28 @@ import api from '@/axios/axios'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { cn } from '@/lib/utils'
 import { useAdminStore } from '@/store/admins.store'
-import { GraduationCap, Plus, Users } from 'lucide-react'
-import React, { useState, type FormEvent } from 'react'
+import { Check, ChevronsUpDown, Plus, Users } from 'lucide-react'
+import { useState, type FormEvent } from 'react'
 import { toast } from 'sonner'
-const mockData = {
-    courses: [
-        { id: 1, name: "Matemáticas Básicas", code: "MAT101", students: 25, teacher: "Prof. García" },
-        { id: 2, name: "Física General", code: "FIS201", students: 18, teacher: "Prof. Rodríguez" },
-        { id: 3, name: "Química Orgánica", code: "QUI301", students: 22, teacher: "Prof. López" },
-    ],
-    students: [
-        { id: 1, name: "Ana Martínez", email: "ana@email.com", code: "EST001" },
-        { id: 2, name: "Carlos Pérez", email: "carlos@email.com", code: "EST002" },
-        { id: 3, name: "María González", email: "maria@email.com", code: "EST003" },
-    ],
-    teachers: [
-        { id: 1, name: "Prof. García", email: "garcia@fesc.edu", department: "Matemáticas" },
-        { id: 2, name: "Prof. Rodríguez", email: "rodriguez@fesc.edu", department: "Física" },
-        { id: 3, name: "Prof. López", email: "lopez@fesc.edu", department: "Química" },
-    ],
-    attendance: {
-        totalStudents: 65,
-        presentToday: 52,
-        absentToday: 13,
-        averageAttendance: 85,
-        weeklyTrend: [78, 82, 85, 80, 88, 85, 90],
-    },
-}
 
 const Actions = () => {
-    const { teachers, allCoursesWithStudents } = useAdminStore()
+    const { teachers, allCoursesWithStudents, students } = useAdminStore()
     const [teacherSearch, setTeacherSearch] = useState("")
     const [showTeacherDropdown, setShowTeacherDropdown] = useState(false)
+    const [openStudent, setOpenStudent] = useState(false);
+
     const filteredTeachers = teachers.filter(
         (teacher) =>
             teacher.nombre.toLowerCase().includes(teacherSearch.toLowerCase())
     )
-    const [students, setStudents] = useState(mockData.students)
     const [newCourse, setNewCourse] = useState({
         name: "",
         horario: "",
@@ -52,22 +32,11 @@ const Actions = () => {
         teacherId: "",
     })
 
-    const [newStudent, setNewStudent] = useState({
-        name: "",
-        email: "",
-        phone: "",
-        address: "",
-    })
-
     const [enrollment, setEnrollment] = useState({
         studentId: "",
         courseId: "",
     })
-
-    const [assignment, setAssignment] = useState({
-        teacherId: "",
-        courseId: "",
-    })
+    const selectedStudent = students.find((s) => s.id === enrollment.studentId);
 
     const handleCreateCourse = async (e: FormEvent<HTMLFormElement>) => {
 
@@ -75,7 +44,6 @@ const Actions = () => {
         const form = e.currentTarget;
         const formData = new FormData(form);
         const data = Object.fromEntries(formData.entries());
-        console.log(data); // Aquí puedes hacer la petición POST por ejemplo
 
         const request = await api.post('/admin/crearCurso', {
             nombre: data.courseName,
@@ -85,39 +53,98 @@ const Actions = () => {
             docente_id: data.teacherId,
         })
 
-        console.log(request.data);
-        if(request.data.status === 'ok') {
-            setNewCourse({
-                name: "",
-                horario: "",
-                fecha_inicio: "",
-                fecha_fin: "",
-                teacherId: "",
-            })
+        if (request.data.status === 'ok') {
             setTeacherSearch("")
             setShowTeacherDropdown(false)
             setTimeout(() => {
                 window.location.reload()
             }, 1000)
             toast.success('Curso creado exitosamente')
-        }else{
+        } else {
             toast.error(request.data.message || 'Error al crear el curso')
         }
-
-
     }
+    const handleRegisterTeacher = async (e: FormEvent<HTMLFormElement>) => {
 
-    const handleRegisterStudent = (e: React.FormEvent) => {
-        e.preventDefault()
-        const student = {
-            id: students.length + 1,
-            name: newStudent.name,
-            email: newStudent.email,
-            code: `EST${String(students.length + 1).padStart(3, "0")}`,
+
+        try {
+            e.preventDefault()
+            const form = e.currentTarget;
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            const request = await api.post('/admin/saveTeacher', {
+                name: data.name,
+                email: data.email,
+                password: data.password,
+                rol: "docente",
+            })
+
+            if (request.data.status === 'ok') {
+                setTimeout(() => {
+                    window.location.reload()
+                }, 1000)
+                toast.success('Profesor creado exitosamente')
+            } else {
+                toast.error(request.data.message || 'Error al crear el profesor')
+            }
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (error) {
+            toast.error('Error al registrar el profesor, por favor intente nuevamente');
         }
-        setStudents([...students, student])
-        setNewStudent({ name: "", email: "", phone: "", address: "" })
+
     }
+
+    const handleRegisterStudent = async (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault()
+        try {
+            const form = e.currentTarget;
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            const request = await api.post('/admin/matricularEstudiante', {
+                nombre: data.name,
+                email: data.email,
+            })
+            if (request.data.status === 'ok') {
+                setTimeout(() => {
+                    window.location.reload()
+                }, 1000)
+                toast.success('Profesor creado exitosamente')
+            } else {
+                toast.error(request.data.message || 'Error al crear el profesor')
+            }
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (error) {
+            toast.error('Error al registrar el estudiante, por favor intente nuevamente');
+        }
+    }
+
+    const handleRegisterStudentToCourse = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        const { studentId, courseId } = enrollment;
+
+        try {
+            const response = await api.post('/admin/matricularEstudianteACurso', {
+                estudiante_id: studentId,
+                curso_id: courseId,
+            });
+
+            if (response.data.status === 'ok') {
+                setOpenStudent(false);
+                setEnrollment({ studentId: "", courseId: "" });
+                toast.success('Estudiante inscrito al curso exitosamente');
+                setTimeout(() => {
+                    window.location.reload()
+                }, 1000)
+            } else {
+                toast.error(response.data.message || 'Error al inscribir estudiante al curso');
+            }
+
+        } catch (err) {
+            console.error("Error:", err);
+            toast.error("Error de red al inscribir estudiante");
+        }
+    };
+
     return (
         <div className="grid grid-cols-1 lg:grid-cols-1 gap-6 min-h-[400px]">
             <Card>
@@ -216,7 +243,7 @@ const Actions = () => {
                                     </div>
                                     <input type="hidden" name="teacherId" value={newCourse.teacherId || ''} />
 
-                                    <Button type="submit" className="w-full">
+                                    <Button type="submit" className="w-full cursor-pointer">
                                         Crear Curso
                                     </Button>
                                 </form>
@@ -237,81 +264,85 @@ const Actions = () => {
                                 </DialogHeader>
                                 <form onSubmit={handleRegisterStudent} className="space-y-4">
                                     <div>
-                                        <Label htmlFor="studentName">Nombre Completo</Label>
+                                        <Label htmlFor="name">Nombre Completo</Label>
                                         <Input
-                                            id="studentName"
-                                            value={newStudent.name}
-                                            onChange={(e) => setNewStudent({ ...newStudent, name: e.target.value })}
+                                            id="name"
+                                            name='name'
                                             placeholder="Ej: Juan Pérez"
                                             required
                                         />
                                     </div>
                                     <div>
-                                        <Label htmlFor="studentEmail">Correo Electrónico</Label>
+                                        <Label htmlFor="email">Correo Electrónico</Label>
                                         <Input
-                                            id="studentEmail"
+                                            id="email"
                                             type="email"
-                                            value={newStudent.email}
-                                            onChange={(e) => setNewStudent({ ...newStudent, email: e.target.value })}
+                                            name='email'
                                             placeholder="juan@email.com"
                                             required
                                         />
                                     </div>
-                                    <div>
-                                        <Label htmlFor="studentPhone">Teléfono</Label>
-                                        <Input
-                                            id="studentPhone"
-                                            value={newStudent.phone}
-                                            onChange={(e) => setNewStudent({ ...newStudent, phone: e.target.value })}
-                                            placeholder="Ej: +57 300 123 4567"
-                                        />
-                                    </div>
-                                    <div>
-                                        <Label htmlFor="studentAddress">Dirección</Label>
-                                        <Input
-                                            id="studentAddress"
-                                            value={newStudent.address}
-                                            onChange={(e) => setNewStudent({ ...newStudent, address: e.target.value })}
-                                            placeholder="Dirección completa"
-                                        />
-                                    </div>
-                                    <Button type="submit" className="w-full">
+                                    <Button type="submit" className="w-full cursor-pointer">
                                         Registrar Estudiante
                                     </Button>
                                 </form>
                             </DialogContent>
                         </Dialog>
 
-                        <Dialog>
+                        <Dialog >
                             <DialogTrigger asChild>
                                 <Button className="w-full bg-transparent" variant="outline">
                                     <Users className="w-4 h-4 mr-2" />
                                     Inscribir a Curso
                                 </Button>
                             </DialogTrigger>
-                            <DialogContent>
+                            <DialogContent className='min-w-[700px]'>
                                 <DialogHeader>
                                     <DialogTitle>Inscribir Estudiante a Curso</DialogTitle>
                                     <DialogDescription>Selecciona el estudiante y el curso</DialogDescription>
                                 </DialogHeader>
-                                <form className="space-y-4">
+                                <form onSubmit={handleRegisterStudentToCourse} className="space-y-4 ">
                                     <div>
-                                        <Label htmlFor="enrollStudent">Estudiante</Label>
-                                        <Select
-                                            value={enrollment.studentId}
-                                            onValueChange={(value) => setEnrollment({ ...enrollment, studentId: value })}
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Seleccionar estudiante" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {students.map((student) => (
-                                                    <SelectItem key={student.id} value={student.id.toString()}>
-                                                        {student.name} ({student.code})
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
+                                        <Popover open={openStudent} onOpenChange={setOpenStudent}>
+                                            <PopoverTrigger asChild>
+                                                <Button
+                                                    variant="outline"
+                                                    role="combobox"
+                                                    className="w-full justify-between"
+                                                >
+                                                    {selectedStudent
+                                                        ? `${selectedStudent.nombre} (${selectedStudent.email})`
+                                                        : "Seleccionar estudiante"}
+                                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                                </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-full p-0">
+                                                <Command>
+                                                    <CommandInput placeholder="Buscar estudiante..." />
+                                                    <CommandList>
+                                                        <CommandEmpty>No se encontró ningún estudiante</CommandEmpty>
+                                                        {students.map((student) => (
+                                                            <CommandItem
+                                                                key={student.id}
+                                                                value={`${student.nombre.toLowerCase()} ${student.email.toLowerCase()}`}
+                                                                onSelect={() => {
+                                                                    setEnrollment({ ...enrollment, studentId: student.id });
+                                                                    setOpenStudent(false);
+                                                                }}
+                                                            >
+                                                                <Check
+                                                                    className={cn(
+                                                                        "mr-2 h-4 w-4",
+                                                                        student.id === enrollment.studentId ? "opacity-100" : "opacity-0"
+                                                                    )}
+                                                                />
+                                                                {student.nombre} ({student.email})
+                                                            </CommandItem>
+                                                        ))}
+                                                    </CommandList>
+                                                </Command>
+                                            </PopoverContent>
+                                        </Popover>
                                     </div>
                                     <div>
                                         <Label htmlFor="enrollCourse">Curso</Label>
@@ -341,54 +372,47 @@ const Actions = () => {
                         <Dialog>
                             <DialogTrigger asChild>
                                 <Button className="w-full bg-transparent" variant="outline">
-                                    <GraduationCap className="w-4 h-4 mr-2" />
-                                    Asignar Profesor
+                                    <Plus className="w-4 h-4 mr-2" />
+                                    Crear Profesor
                                 </Button>
                             </DialogTrigger>
                             <DialogContent>
                                 <DialogHeader>
-                                    <DialogTitle>Asignar Profesor a Curso</DialogTitle>
-                                    <DialogDescription>Selecciona el profesor y el curso</DialogDescription>
+                                    <DialogTitle>Registrar Nuevo Profesor</DialogTitle>
+                                    <DialogDescription>Completa la información del profesor</DialogDescription>
                                 </DialogHeader>
-                                <form className="space-y-4">
+                                <form onSubmit={handleRegisterTeacher} className="space-y-4">
                                     <div>
-                                        <Label htmlFor="assignTeacher">Profesor</Label>
-                                        <Select
-                                            value={assignment.teacherId}
-                                            onValueChange={(value) => setAssignment({ ...assignment, teacherId: value })}
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Seleccionar profesor" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {teachers.map((teacher) => (
-                                                    <SelectItem key={teacher.id} value={teacher.id.toString()}>
-                                                        {teacher.nombre}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
+                                        <Label htmlFor="name">Nombre Completo</Label>
+                                        <Input
+                                            id="name"
+                                            name='name'
+                                            placeholder="Ej: Dr. Juan Pérez"
+                                            required
+                                        />
                                     </div>
                                     <div>
-                                        <Label htmlFor="assignCourse">Curso</Label>
-                                        <Select
-                                            value={assignment.courseId}
-                                            onValueChange={(value) => setAssignment({ ...assignment, courseId: value })}
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Seleccionar curso" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {allCoursesWithStudents.map((course) => (
-                                                    <SelectItem key={course.curso_id} value={course.curso_id}>
-                                                        {course.curso_nombre} ({course.curso_id})
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
+                                        <Label htmlFor="email">Correo Electrónico</Label>
+                                        <Input
+                                            id="email"
+                                            type="email"
+                                            name='email'
+                                            placeholder="juan.perez@fesc.edu"
+                                            required
+                                        />
                                     </div>
-                                    <Button type="submit" className="w-full">
-                                        Asignar Profesor
+                                    <div>
+                                        <Label htmlFor="password">Contraseña</Label>
+                                        <Input
+                                            id="password"
+                                            type="password"
+                                            name='password'
+                                            placeholder="Contraseña temporal"
+                                            required
+                                        />
+                                    </div>
+                                    <Button type="submit" className="w-full cursor-pointer">
+                                        Registrar Profesor
                                     </Button>
                                 </form>
                             </DialogContent>
@@ -406,10 +430,10 @@ const Actions = () => {
                     <div className="space-y-3">
                         {allCoursesWithStudents.map((course) => (
                             <div key={course.curso_id} className="flex items-center justify-between p-3 border rounded-lg">
-                                <div>
+                                <div className='items-start justify-start flex flex-col'>
                                     <p className="font-medium">{course.curso_nombre}</p>
                                     <p className="text-sm text-gray-500">
-                                        {course.curso_id} • {course.docente_id}
+                                        {course.docente_nombre} • {course.horario}
                                     </p>
                                 </div>
                                 <Badge variant="secondary">{course.estudiantes.length} estudiantes</Badge>

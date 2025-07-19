@@ -112,3 +112,17 @@ interface Docente {
   email: string;
   rol: string
 }
+
+interface Student {
+  id: string;
+  nombre: string;
+  email: string;
+}
+
+interface History{
+  id: string;
+  usuario_id: string;
+  tipo: string;
+  fecha: string;
+  descripcion: string;
+}

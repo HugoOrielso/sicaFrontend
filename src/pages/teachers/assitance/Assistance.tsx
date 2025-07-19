@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { useEffect, useState } from "react"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useDocenteStore } from "@/store/teachers.store"
-import Stats from "@/components/Teachers/Dashboard/Stats"
+import Stats from "@/components/Teachers/Dashboard/StatsTeacher"
 import { guardarAsistencia } from "@/services/asistencias"
 
 const Assistance = () => {

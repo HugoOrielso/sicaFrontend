@@ -1,6 +1,6 @@
 // src/store/useDocenteStore.ts
 import api from '@/axios/axios'
-import type { Course, CursoConEstudiantes, CursoStats, SpecificCourse } from '@/types'
+import type { Course, CursoConEstudiantes, CursoStats, History, SpecificCourse } from '@/types'
 import { create } from 'zustand'
 
 
@@ -9,6 +9,7 @@ interface DocenteState {
     cantidadDeCursos: number
     totalStudents: number
     loading: boolean
+    history: History[]
     error: string | null
     statsAssistance: { asistencia: number, inasistencia: number, retraso: number }
     statsByCurso: CursoStats[]
@@ -20,6 +21,7 @@ interface DocenteState {
     fetchStatsAssistanceByCourse: () => Promise<void>
     fetchCoursesWithStudentsbyTeacher: () => Promise<void>
     fetchCourseWithStudentsbyTeacherAndId: (id: string) => Promise<void>
+    fetchHistory: () => Promise<void>
 }
 
 export const useDocenteStore = create<DocenteState>((set) => ({
@@ -28,6 +30,7 @@ export const useDocenteStore = create<DocenteState>((set) => ({
     totalStudents: 0,
     loading: false,
     error: null,
+    history: [],
     statsAssistance: { asistencia: 0, inasistencia: 0, retraso: 0 },
     statsByCurso: [],
     cousesWithStudentsByTeacer: [],
@@ -94,7 +97,6 @@ export const useDocenteStore = create<DocenteState>((set) => ({
             set({ error: errorMsg, loading: false });
         }
     },
-
     fetchCoursesWithStudentsbyTeacher: async () => {
         set({ loading: true, error: null });
         try {
@@ -122,10 +124,26 @@ export const useDocenteStore = create<DocenteState>((set) => ({
                 return;
             }
 
+            console.log(res.data.curso);
+
             set({ specificCourse: res.data.curso, loading: false });
         } catch (err: unknown) {
             const errorMsg = err instanceof Error ? err.message : 'Error al cargar asistencia por curso';
             set({ error: errorMsg, loading: false });
         }
-    }
+    },
+    fetchHistory: async () => {
+        set({ loading: true, error: null });
+        try {
+            const request = await api.get('/users/history');
+
+            if (request.status === 204) {
+                set({ history: [], loading: false });
+                return;
+            }
+            set({ history: request.data.data, loading: false });
+        } catch {
+            set({ loading: false });
+        }
+    },
 }));

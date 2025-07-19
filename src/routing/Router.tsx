@@ -26,6 +26,7 @@ const Router = () => {
         {/* Rutas para ADMIN */}
         <Route element={<AdminLayout />}>
           <Route path="/administracion" element={<DashboardAdmin />} />
+          <Route path="/administracion/curso/:id" element={<DashboardAdmin />} />
         </Route>
       </Routes>
     </BrowserRouter>

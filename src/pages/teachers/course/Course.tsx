@@ -9,14 +9,15 @@ import { useEffect } from "react"
 import { useParams } from "react-router-dom"
 
 const Course = () => {
-    const { fetchCourseWithStudentsbyTeacherAndId, specificCourse } = useDocenteStore()
+    const { fetchCourseWithStudentsbyTeacherAndId, specificCourse, fetchCoursesWithStudentsbyTeacher } = useDocenteStore()
     const { id } = useParams()
 
     useEffect(() => {
         if (id) {
             fetchCourseWithStudentsbyTeacherAndId(id)
         }
-    }, [fetchCourseWithStudentsbyTeacherAndId, id])
+        fetchCoursesWithStudentsbyTeacher()
+    }, [fetchCourseWithStudentsbyTeacherAndId, id, fetchCoursesWithStudentsbyTeacher])
 
     if (!specificCourse) return <Layout><p className="p-4">Cargando curso...</p></Layout>
 
@@ -49,7 +50,6 @@ const Course = () => {
                 </Card>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 h-full gap-6">
-                    {/* Students Section */}
                     <Card className="lg:col-span-2 shadow-lg border-0">
                         <CardHeader>
                             <CardTitle className="flex items-center space-x-2">
@@ -58,38 +58,42 @@ const Course = () => {
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="space-y-4">
-                                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border">
-                                    {specificCourse.estudiantes?.length && specificCourse.estudiantes.map((est) => {
-                                        return (
-                                            <div className="flex items-center space-x-3 justify-between w-full" key={est.estudiante_id}>
-                                                <div >
-
-                                                    <div>
-                                                        <p className="font-medium text-slate-900">{est.nombre}</p>
-                                                        <div className="flex items-center space-x-1 text-sm text-slate-600">
-                                                            <Mail className="w-3 h-3" />
-                                                            <span>{est.email}</span>
-                                                        </div>
-                                                    </div>
+                            <div className="space-y-2">
+                                {Array.isArray(specificCourse.estudiantes) && specificCourse.estudiantes.length  ? (
+                                    specificCourse.estudiantes.map((est) => (
+                                        <div
+                                            className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border"
+                                            key={est.estudiante_id}
+                                        >
+                                            <div>
+                                                <p className="font-medium text-slate-900">{est.nombre}</p>
+                                                <div className="flex items-center space-x-1 text-sm text-slate-600">
+                                                    <Mail className="w-3 h-3" />
+                                                    <span>{est.email}</span>
                                                 </div>
-                                                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                                                {est.tipo_asistencia || 'Sin asistencia'}
-                                                {
-                                                    est.tipo_asistencia === 'asistencia' ? (
-                                                        <CheckCircle className="w-5 h-5 text-green-600" />
-                                                    ) : est.tipo_asistencia === 'inasistencia' ? (
-                                                        <Clock className="w-5 h-5 text-red-600" />
-                                                    ) : (
-                                                        <Clock className="w-5 h-5 text-yellow-600" />
-                                                    )
-                                                }
-                                                </Badge>
                                             </div>
-                                        )
-                                    })}
-                                </div>
+                                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 flex items-center space-x-2">
+                                                {est.tipo_asistencia || 'Sin asistencia'}
+                                                {est.tipo_asistencia === 'asistencia' ? (
+                                                    <CheckCircle className="w-5 h-5 text-green-600" />
+                                                ) : est.tipo_asistencia === 'inasistencia' ? (
+                                                    <Clock className="w-5 h-5 text-red-600" />
+                                                ) : est.tipo_asistencia === 'retraso' ? (
+                                                    <Clock className="w-5 h-5 text-yellow-600" />
+                                                ) : (
+                                                    <span className="text-gray-400">—</span>  // Sin ícono
+                                                )}
+                                            </Badge>
+
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="p-4 bg-slate-50 rounded-lg border">
+                                        <p className="text-gray-500">No hay estudiantes registrados en este curso.</p>
+                                    </div>
+                                )}
                             </div>
+
                         </CardContent>
                     </Card>
 
@@ -149,6 +153,34 @@ const Course = () => {
                                     <span className="font-medium">{specificCourse.asistencia_hoy.retraso}</span>
                                 </div>
                                 <Progress value={specificCourse.asistencia_hoy.retraso * 100} className="h-2" />
+                            </div>
+
+                            <Separator />
+
+                            <div className="space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center space-x-2">
+                                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                                        <span className="text-sm font-medium">Asistencia</span>
+                                    </div>
+                                    <span className="text-2xl font-bold text-green-600"> {specificCourse.asistencia_hoy.asistencia * 100}% </span>
+                                </div>
+
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center space-x-2">
+                                        <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                                        <span className="text-sm font-medium">Inasistencia</span>
+                                    </div>
+                                    <span className="text-2xl font-bold text-red-600">{specificCourse.asistencia_hoy.inasistencia * 100}%</span>
+                                </div>
+
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center space-x-2">
+                                        <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+                                        <span className="text-sm font-medium">Retrasos</span>
+                                    </div>
+                                    <span className="text-2xl font-bold text-orange-600">{specificCourse.asistencia_hoy.retraso * 100}%</span>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>

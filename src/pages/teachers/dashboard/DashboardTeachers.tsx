@@ -1,24 +1,25 @@
 import CoursesStadistics from '@/components/Teachers/Dashboard/CoursesStadistics'
-import Stats from '@/components/Teachers/Dashboard/Stats'
+import StatsTeacher from '@/components/Teachers/Dashboard/StatsTeacher'
 import Layout from '@/components/Teachers/Layout'
 import { useDocenteStore } from '@/store/teachers.store'
 import { useEffect } from 'react'
 const DashboardTeachers = () => {
-  const {fetchCursos, fetchTotalStudents, fetchStatsAssistance, fetchStatsAssistanceByCourse } =  useDocenteStore()
+  const {fetchCursos, fetchTotalStudents, fetchStatsAssistance, fetchStatsAssistanceByCourse, fetchHistory } =  useDocenteStore()
 
   useEffect(()=>{
     fetchCursos()
     fetchTotalStudents()
     fetchStatsAssistance()
     fetchStatsAssistanceByCourse()
-  },[fetchCursos, fetchTotalStudents,fetchStatsAssistance, fetchStatsAssistanceByCourse])
+    fetchHistory()
+  },[fetchCursos, fetchTotalStudents,fetchStatsAssistance, fetchStatsAssistanceByCourse, fetchHistory])
 
   return (
     <Layout>
       <div>
-        <Stats/>
+        <StatsTeacher/>
       </div>
-      <div className='grid grid-cols-2 w-full '>
+      <div className='w-full '>
         <CoursesStadistics/>
       </div>
     </Layout>

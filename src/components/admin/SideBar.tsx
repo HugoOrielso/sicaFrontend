@@ -2,9 +2,18 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupConte
 import { BarChart3, BookOpen, ChevronDown, LogOut, User } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '../ui/dropdown-menu'
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import api from '@/axios/axios'
 
 const SideBar = () => {
     const name = localStorage.getItem('name') || 'Usuario';
+    async function closeSession() {
+        const request = await api.post('/users/logout')
+        if (request.data.status === 'ok') {
+            localStorage.removeItem("userName")
+            localStorage.removeItem("token")
+            window.location.href = "/login"
+        }
+    }
     return (
         <SidebarProvider>
             <SidebarTrigger />
@@ -54,7 +63,7 @@ const SideBar = () => {
                                 <DropdownMenuContent side="top" className="w-[--radix-popper-anchor-width]">
                                     <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
                                     <DropdownMenuSeparator />
-                                    <DropdownMenuItem>
+                                    <DropdownMenuItem onClick={closeSession} className="cursor-pointer">
                                         <LogOut className="w-4 h-4 mr-2" />
                                         Cerrar Sesión
                                     </DropdownMenuItem>

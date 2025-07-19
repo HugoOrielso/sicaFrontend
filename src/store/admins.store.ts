@@ -1,5 +1,5 @@
 import api from '@/axios/axios';
-import type { CursoConEstudiantes, Docente, ResumenGlobal } from '@/types';
+import type { CursoConEstudiantes, Docente, History, ResumenGlobal, Student } from '@/types';
 import { create } from 'zustand';
 
 interface CursoData {
@@ -27,6 +27,8 @@ interface AdminState {
   allCourses: CursoConEstudiantes[];
   cantidadEstudiantes: number;
   teachers: Docente[];
+  students: Student[];
+  history: History[];
   resumenGlobal: ResumenGlobal
   allCoursesWithStudents: CursoConEstudiantes[];
   createCurso: (data: CursoData) => Promise<void>;
@@ -35,6 +37,8 @@ interface AdminState {
   fetchAllCourses: () => Promise<void>;
   fetchAllCoursesWithStudents: () => Promise<void>;
   fetchAllTeachers: () => Promise<void>;
+  fetchAllStudents: () => Promise<void>;
+  fetchHistory: () => Promise<void>;
 }
 
 export const useAdminStore = create<AdminState>((set) => ({
@@ -42,6 +46,8 @@ export const useAdminStore = create<AdminState>((set) => ({
   error: null,
   allCourses: [],
   cantidadEstudiantes: 0,
+  students: [],
+  history: [],
   resumenGlobal: {
     total_cursos: 0,
     total_registros: 0,
@@ -63,7 +69,6 @@ export const useAdminStore = create<AdminState>((set) => ({
       set({ error: errorMessage || 'Error al crear curso', loading: false });
     }
   },
-
   registrarEstudiante: async (data) => {
     set({ loading: true, error: null });
     try {
@@ -76,7 +81,6 @@ export const useAdminStore = create<AdminState>((set) => ({
       set({ error: errorMessage || 'Error al registrar estudiante', loading: false });
     }
   },
-
   checkAuth: async () => {
     set({ loading: true, error: null });
     try {
@@ -96,9 +100,6 @@ export const useAdminStore = create<AdminState>((set) => ({
         set({ allCourses: [], loading: false });
         return;
       }
-
-
-
       set({ allCourses: request.data.data, loading: false });
     } catch {
       set({ loading: false });
@@ -127,6 +128,41 @@ export const useAdminStore = create<AdminState>((set) => ({
         return;
       }
       set({ teachers: request.data.data, loading: false });
+    } catch {
+      set({ loading: false });
+    }
+  },
+  fetchAllStudents: async () => {
+    set({ loading: true, error: null });
+    try {
+      const request = await api.get('/admin/allStudents');
+      const req = await api.get('/admin/totalStudents');
+
+      if (req.status === 200) {
+        set({ cantidadEstudiantes: req.data.total, loading: false });
+      } else {
+        set({ cantidadEstudiantes: 0, loading: false });
+      }
+
+      if (request.status === 204) {
+        set({ students: [], loading: false });
+        return;
+      }
+      set({ students: request.data.data, loading: false });
+    } catch {
+      set({ loading: false });
+    }
+  },
+  fetchHistory: async () => {
+    set({ loading: true, error: null });
+    try {
+      const request = await api.get('/users/history');
+
+      if (request.status === 204) {
+        set({ history: [], loading: false });
+        return;
+      }
+      set({ history: request.data.data, loading: false });
     } catch {
       set({ loading: false });
     }

@@ -1,10 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { useAdminStore } from '@/store/admins.store'
+import { useDocenteStore } from '@/store/teachers.store'
 import { AlertTriangle, BookOpen, CheckCircle, UserCheck, Users, UserX } from 'lucide-react'
 
-const Stats = () => {
+const StatsTeacher = () => {
 
-    const {  resumenGlobal } = useAdminStore()
+    const {cantidadDeCursos, totalStudents, statsAssistance} = useDocenteStore()
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
@@ -14,7 +14,7 @@ const Stats = () => {
                     <BookOpen className="h-4 w-4 text-blue-600" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{resumenGlobal.total_cursos}</div>
+                    <div className="text-2xl font-bold">{cantidadDeCursos}</div>
                     <p className="text-xs text-muted-foreground">Cursos activos</p>
                 </CardContent>
             </Card>
@@ -25,7 +25,7 @@ const Stats = () => {
                     <Users className="h-4 w-4 text-green-600" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold"> {resumenGlobal.total_registros} </div>
+                    <div className="text-2xl font-bold"> {totalStudents} </div>
                     <p className="text-xs text-muted-foreground">Estudiantes matriculados</p>
                 </CardContent>
             </Card>
@@ -36,7 +36,7 @@ const Stats = () => {
                     <UserCheck className="h-4 w-4 text-emerald-600" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold"> {resumenGlobal.porcentaje_asistencia_global} %</div>
+                    <div className="text-2xl font-bold"> {statsAssistance.asistencia} %</div>
                 </CardContent>
             </Card>
 
@@ -46,9 +46,9 @@ const Stats = () => {
                     <UserX className="h-4 w-4 text-red-600" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold"> {resumenGlobal.porcentaje_inasistencia_global} %</div>
+                    <div className="text-2xl font-bold"> {statsAssistance.inasistencia} %</div>
                     <p className="text-xs text-muted-foreground">
-                        {resumenGlobal.porcentaje_inasistencia_global < 20 ? (
+                        {statsAssistance.inasistencia < 20 ? (
                             <span className="text-green-600">
                                 <CheckCircle className="inline w-3 h-3 mr-1" />
                                 Nivel aceptable
@@ -66,4 +66,4 @@ const Stats = () => {
     )
 }
 
-export default Stats
+export default StatsTeacher

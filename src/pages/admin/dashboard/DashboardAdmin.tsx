@@ -1,22 +1,25 @@
 import Layout from '@/components/admin/Layout'
+import StatsAdmin from '@/components/admin/StatsAdmin'
 import Actions from '@/components/Teachers/Dashboard/Actions'
-import Stats from '@/components/Teachers/Dashboard/Stats'
+
 import { useAdminStore } from '@/store/admins.store'
 import { useEffect } from 'react'
 const DashboardAdmin = () => {
-  const {fetchAllCourses, fetchAllCoursesWithStudents, fetchAllTeachers} = useAdminStore()
+  const {fetchAllCourses, fetchAllCoursesWithStudents, fetchAllTeachers, fetchAllStudents, fetchHistory } = useAdminStore()
   useEffect(()=>{
       fetchAllCourses()
       fetchAllCoursesWithStudents()
       fetchAllTeachers()
-  },[fetchAllCourses, fetchAllCoursesWithStudents, fetchAllTeachers])
+      fetchAllStudents()
+      fetchHistory()
+  },[fetchAllCourses, fetchAllCoursesWithStudents, fetchAllTeachers, fetchAllStudents, fetchHistory])
 
   return (
     <Layout>
       <div>
-        <Stats/>
+        <StatsAdmin/>
       </div>
-      <div className='  '>
+      <div>
         <Actions/>
       </div>
 

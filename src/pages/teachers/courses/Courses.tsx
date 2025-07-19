@@ -1,4 +1,4 @@
-import Stats from '@/components/Teachers/Dashboard/Stats'
+import Stats from '@/components/Teachers/Dashboard/StatsTeacher'
 import Layout from '@/components/Teachers/Layout'
 import { useDocenteStore } from '@/store/teachers.store'
 import { useEffect } from 'react'
@@ -12,7 +12,6 @@ const Courses = () => {
         fetchStatsAssistance()
         fetchStatsAssistanceByCourse()
         fetchCoursesWithStudentsbyTeacher()
-
     }, [fetchCursos, fetchTotalStudents, fetchStatsAssistance, fetchStatsAssistanceByCourse, fetchCoursesWithStudentsbyTeacher])
     return (
         <Layout>
@@ -20,13 +19,13 @@ const Courses = () => {
                 <Stats />
             </div>
 
-            <div className=" space-y-4">
+            <div className=" space-y-4 space-x-4">
                 <h1 className="text-2xl font-bold">Mis cursos asignados</h1>
 
                 {cousesWithStudentsByTeacer.length === 0 ? (
                     <p className="text-gray-600">No tienes cursos asignados por ahora.</p>
                 ) : (
-                    <ul className="grid grid-cols-2 w-full">
+                    <ul className="grid grid-cols-2 gap-4 w-full">
                         {cousesWithStudentsByTeacer.map((curso) => (
                             <div key={curso.curso_id} className='flex w-full p-4 rounded-lg shadow-sm border items-center justify-between'>
                                 <li key={curso.curso_id} className="flex flex-col items-start justify-center ">
@@ -41,6 +40,9 @@ const Courses = () => {
                         ))}
                     </ul>
                 )}
+            </div>
+            <div>
+                
             </div>
         </Layout>
     )
