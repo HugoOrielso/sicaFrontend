@@ -1,10 +1,10 @@
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '../ui/sidebar'
-import { BarChart3, BookOpen, Calendar, ChevronDown, LogOut, Settings, TrendingDown, User, Users } from 'lucide-react'
+import { BarChart3, BookOpen, ChevronDown, LogOut, User } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '../ui/dropdown-menu'
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 
 const SideBar = () => {
-
+    const name = localStorage.getItem('name') || 'Usuario';
     return (
         <SidebarProvider>
             <SidebarTrigger />
@@ -32,24 +32,6 @@ const SideBar = () => {
                                         <span>Dashboard</span>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
-                                <SidebarMenuItem>
-                                    <SidebarMenuButton className="hover:bg-red-50 hover:text-red-700">
-                                        <Users className="w-4 h-4" />
-                                        <span>Mis Cursos</span>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
-                                <SidebarMenuItem>
-                                    <SidebarMenuButton className="hover:bg-red-50 hover:text-red-700">
-                                        <Calendar className="w-4 h-4" />
-                                        <span>Asistencia</span>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
-                                <SidebarMenuItem>
-                                    <SidebarMenuButton className="hover:bg-red-50 hover:text-red-700">
-                                        <TrendingDown className="w-4 h-4" />
-                                        <span>Reportes</span>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
                             </SidebarMenu>
                         </SidebarGroupContent>
                     </SidebarGroup>
@@ -63,8 +45,8 @@ const SideBar = () => {
                                     <SidebarMenuButton className="hover:bg-red-50">
                                         <User className="w-4 h-4" />
                                         <div className="flex flex-col items-start">
-                                            <span className="text-sm font-medium">Prof. García</span>
-                                            <span className="text-xs text-muted-foreground">Docente</span>
+                                            <span className="text-sm font-medium">Ad. {name} </span>
+                                            <span className="text-xs text-muted-foreground">Administrador</span>
                                         </div>
                                         <ChevronDown className="ml-auto w-4 h-4" />
                                     </SidebarMenuButton>
@@ -72,10 +54,6 @@ const SideBar = () => {
                                 <DropdownMenuContent side="top" className="w-[--radix-popper-anchor-width]">
                                     <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
                                     <DropdownMenuSeparator />
-                                    <DropdownMenuItem>
-                                        <Settings className="w-4 h-4 mr-2" />
-                                        Configuración
-                                    </DropdownMenuItem>
                                     <DropdownMenuItem>
                                         <LogOut className="w-4 h-4 mr-2" />
                                         Cerrar Sesión

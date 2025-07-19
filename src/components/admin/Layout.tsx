@@ -3,7 +3,7 @@ import SideBar from './SideBar';
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="grid grid-cols-[300px_1fr] min-h-screen w-full">
+    <div className="grid grid-cols-[250px_1fr] min-h-screen w-full">
       {/* Sidebar (puedes reemplazar esto con tu componente real) */}
         <SideBar/>
 
