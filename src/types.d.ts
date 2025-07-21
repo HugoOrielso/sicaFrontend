@@ -21,6 +21,8 @@ export interface Estudiante {
   estudiante_id: string;
   nombre: string;
   email: string;
+  inasistencias: number;
+  asistencia_hoy?: 'asistencia' | 'inasistencia' | 'retraso' | null;
 }
 
 export interface CursoConEstudiantes {

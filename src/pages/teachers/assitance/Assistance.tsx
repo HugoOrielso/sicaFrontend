@@ -1,21 +1,67 @@
-import Layout from "@/components/Teachers/Layout"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { CheckCircle, Clock, Save, Users, XCircle } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { useEffect, useState } from "react"
-import { Checkbox } from "@/components/ui/checkbox"
-import { useDocenteStore } from "@/store/teachers.store"
-import Stats from "@/components/Teachers/Dashboard/StatsTeacher"
-import { guardarAsistencia } from "@/services/asistencias"
+import Layout from "@/components/Teachers/Layout";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { CheckCircle, Clock, Save, Users, XCircle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { useEffect, useState } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useDocenteStore } from "@/store/teachers.store";
+import Stats from "@/components/Teachers/Dashboard/StatsTeacher";
+import { guardarAsistencia } from "@/services/asistencias";
 
 const Assistance = () => {
-    const { fetchCursos, fetchTotalStudents, fetchStatsAssistance, fetchStatsAssistanceByCourse, fetchCoursesWithStudentsbyTeacher, cousesWithStudentsByTeacer } = useDocenteStore()
-    const [selectedCourseId, setSelectedCourseId] = useState<string | undefined>(undefined)
-    const [attendance, setAttendance] = useState<Record<string, boolean>>({});
+    const {
+        fetchCursos,
+        fetchTotalStudents,
+        fetchStatsAssistance,
+        fetchStatsAssistanceByCourse,
+        fetchCoursesWithStudentsbyTeacher,
+        cousesWithStudentsByTeacer
+    } = useDocenteStore();
+
+    const [selectedCourseId, setSelectedCourseId] = useState<string | undefined>(undefined);
+    const [attendance, setAttendance] = useState<Record<string, boolean | undefined>>({});
+
+    const selectedCourse = cousesWithStudentsByTeacer.find(
+        (c) => c.curso_id === selectedCourseId
+    );
+    const students = selectedCourse?.estudiantes || [];
+
+    // ✅ INICIALIZAR attendance según asistencia_hoy
+    useEffect(() => {
+        if (!selectedCourseId || students.length === 0) return;
+
+        const initial: Record<string, boolean | undefined> = {};
+        students.forEach((s) => {
+            if (s.asistencia_hoy === "asistencia") initial[s.estudiante_id] = true;
+            else if (s.asistencia_hoy === "inasistencia") initial[s.estudiante_id] = false;
+            else if (s.asistencia_hoy === "retraso") initial[s.estudiante_id] = undefined;
+        });
+
+        setAttendance(initial);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedCourseId]);
+
+    useEffect(() => {
+        fetchCoursesWithStudentsbyTeacher();
+        fetchCursos();
+        fetchTotalStudents();
+        fetchStatsAssistance();
+        fetchStatsAssistanceByCourse();
+    }, [fetchCoursesWithStudentsbyTeacher, fetchCursos, fetchStatsAssistance, fetchStatsAssistanceByCourse, fetchTotalStudents]);
+
+
+    const getInitials = (name: string) => {
+        return name
+            .split(" ")
+            .map((n) => n[0])
+            .join("")
+            .substring(0, 2)
+            .toUpperCase();
+    };
 
     const handleGuardarAsistencia = async () => {
         if (!selectedCourseId) return;
@@ -36,38 +82,10 @@ const Assistance = () => {
         });
     };
 
-    useEffect(() => {
-        fetchCoursesWithStudentsbyTeacher()
-        fetchCursos()
-        fetchTotalStudents()
-        fetchStatsAssistance()
-        fetchStatsAssistanceByCourse()
-    }, [fetchCursos, fetchTotalStudents, fetchStatsAssistance, fetchStatsAssistanceByCourse, fetchCoursesWithStudentsbyTeacher])
+    const presentCount = Object.values(attendance).filter((v) => v === true).length;
+    const absentCount = Object.values(attendance).filter((v) => v === false).length;
+    const lateCount = Object.values(attendance).filter((v) => v === undefined).length;
 
-    const selectedCourse = cousesWithStudentsByTeacer.find(
-        (c) => c.curso_id === selectedCourseId
-    );
-
-    const students = selectedCourse?.estudiantes || [];
-
-    const handleAttendanceChange = (studentId: string, isPresent: boolean) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        setAttendance((prev: any) => ({
-            ...prev,
-            [studentId]: isPresent,
-        }))
-    }
-
-    const getInitials = (name: string) => {
-        return name
-            .split(" ")
-            .map((n) => n[0])
-            .join("")
-            .substring(0, 2)
-            .toUpperCase()
-    }
-
-    const presentCount = Object.values(attendance).filter(Boolean).length
     return (
         <Layout>
             <div className="flex-1 space-y-6 p-6">
@@ -79,7 +97,9 @@ const Assistance = () => {
                         </div>
                     </div>
                 </div>
+
                 <Stats />
+
                 <Card>
                     <CardHeader>
                         <CardTitle>Seleccionar Curso</CardTitle>
@@ -161,21 +181,31 @@ const Assistance = () => {
 
                                                 <TableCell>
                                                     <Badge variant="outline" className="bg-gray-200 text-gray-600">
-                                                        Sin datos
+                                                        {student.asistencia_hoy || "Sin datos"}
                                                     </Badge>
                                                 </TableCell>
 
                                                 <TableCell className="text-center">
                                                     <Checkbox
                                                         checked={attendance[student.estudiante_id] === true}
-                                                        onCheckedChange={() => handleAttendanceChange(student.estudiante_id, true)}
+                                                        onCheckedChange={() =>
+                                                            setAttendance((prev) => ({
+                                                                ...prev,
+                                                                [student.estudiante_id]: true,
+                                                            }))
+                                                        }
                                                     />
                                                 </TableCell>
 
                                                 <TableCell className="text-center">
                                                     <Checkbox
                                                         checked={attendance[student.estudiante_id] === false}
-                                                        onCheckedChange={() => handleAttendanceChange(student.estudiante_id, false)}
+                                                        onCheckedChange={() =>
+                                                            setAttendance((prev) => ({
+                                                                ...prev,
+                                                                [student.estudiante_id]: false,
+                                                            }))
+                                                        }
                                                     />
                                                 </TableCell>
 
@@ -184,16 +214,14 @@ const Assistance = () => {
                                                         checked={attendance[student.estudiante_id] === undefined}
                                                         onCheckedChange={() => {
                                                             setAttendance((prev) => {
-                                                                const newAttendance = { ...prev }
-                                                                delete newAttendance[student.estudiante_id]
-                                                                return newAttendance
-                                                            })
+                                                                const newAttendance = { ...prev };
+                                                                delete newAttendance[student.estudiante_id];
+                                                                return newAttendance;
+                                                            });
                                                         }}
                                                     />
                                                 </TableCell>
                                             </TableRow>
-
-
                                         ))}
                                     </TableBody>
                                 </Table>
@@ -207,27 +235,24 @@ const Assistance = () => {
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <XCircle className="h-4 w-4 text-red-600" />
-                                        <span className="text-sm">
-                                            Ausentes: {Object.values(attendance).filter((a) => a === false).length}
-                                        </span>
+                                        <span className="text-sm">Ausentes: {absentCount}</span>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <Clock className="h-4 w-4 text-yellow-600" />
-                                        <span className="text-sm">Tardanzas: {students.length - Object.keys(attendance).length}</span>
+                                        <span className="text-sm">Tardanzas: {lateCount}</span>
                                     </div>
                                 </div>
                                 <Button className="bg-red-600 hover:bg-red-700" onClick={handleGuardarAsistencia}>
                                     <Save className="h-4 w-4 mr-2" />
                                     Guardar Asistencia
                                 </Button>
-
                             </div>
                         </CardContent>
                     </Card>
                 )}
             </div>
         </Layout>
-    )
-}
+    );
+};
 
-export default Assistance
+export default Assistance;
