@@ -69,7 +69,7 @@ const SideBar = () => {
                         <SidebarMenuItem>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <SidebarMenuButton className="hover:bg-red-50">
+                                    <SidebarMenuButton className="hover:bg-red-50 cursor-pointer">
                                         <User className="w-4 h-4" />
                                         <div className="flex flex-col items-start">
                                             <span className="text-sm font-medium">Prof. {userName}</span>
@@ -81,7 +81,7 @@ const SideBar = () => {
                                 <DropdownMenuContent side="top" className="w-[--radix-popper-anchor-width]">
                                     <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
                                     <DropdownMenuSeparator />
-                                    <DropdownMenuItem onClick={()=>{closeSession()}}>
+                                    <DropdownMenuItem className='cursor-pointer' onClick={()=>{closeSession()}}>
                                         <LogOut   className="w-4 h-4 mr-2" />
                                         Cerrar Sesión
                                     </DropdownMenuItem>

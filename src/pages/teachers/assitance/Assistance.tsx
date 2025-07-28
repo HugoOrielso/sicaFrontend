@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useDocenteStore } from "@/store/teachers.store";
 import Stats from "@/components/Teachers/Dashboard/StatsTeacher";
 import { guardarAsistencia } from "@/services/asistencias";
+import type { EstadoAsistencia } from "@/types";
 
 const Assistance = () => {
     const {
@@ -23,7 +24,9 @@ const Assistance = () => {
     } = useDocenteStore();
 
     const [selectedCourseId, setSelectedCourseId] = useState<string | undefined>(undefined);
-    const [attendance, setAttendance] = useState<Record<string, boolean | undefined>>({});
+    type AsistenciaTipo = "asistencia" | "inasistencia" | "retraso";
+    const [attendance, setAttendance] = useState<Record<string, AsistenciaTipo>>({});
+    const [justificaciones, setJustificaciones] = useState<Record<string, string>>({});
 
     const selectedCourse = cousesWithStudentsByTeacer.find(
         (c) => c.curso_id === selectedCourseId
@@ -32,17 +35,15 @@ const Assistance = () => {
 
     // ✅ INICIALIZAR attendance según asistencia_hoy
     useEffect(() => {
-        if (!selectedCourseId || students.length === 0) return;
-
-        const initial: Record<string, boolean | undefined> = {};
+        const initial: Record<string, AsistenciaTipo> = {};
         students.forEach((s) => {
-            if (s.asistencia_hoy === "asistencia") initial[s.estudiante_id] = true;
-            else if (s.asistencia_hoy === "inasistencia") initial[s.estudiante_id] = false;
-            else if (s.asistencia_hoy === "retraso") initial[s.estudiante_id] = undefined;
+            if (s.asistencia_hoy === "asistencia") initial[s.estudiante_id] = "asistencia";
+            else if (s.asistencia_hoy === "inasistencia") initial[s.estudiante_id] = "inasistencia";
+            else if (s.asistencia_hoy === "retraso") initial[s.estudiante_id] = "retraso";
         });
-
         setAttendance(initial);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedCourseId]);
 
     useEffect(() => {
@@ -66,15 +67,32 @@ const Assistance = () => {
     const handleGuardarAsistencia = async () => {
         if (!selectedCourseId) return;
 
-        const registros = Object.entries(attendance).map(([estudiante_id, valor]) => {
-            let estado: 'presente' | 'ausente' | 'tardanza';
+        const registros = Object.entries(attendance).map(([estudiante_id, rawEstado]) => {
+            let estado: EstadoAsistencia;
 
-            if (valor === true) estado = 'presente';
-            else if (valor === false) estado = 'ausente';
-            else estado = 'tardanza';
+            if (rawEstado === "asistencia") estado = "presente";
+            else if (rawEstado === "inasistencia") estado = "ausente";
+            else estado = "tardanza";
 
-            return { estudiante_id, estado };
+            const studentInfo = students.find(s => s.estudiante_id === estudiante_id);
+            const rawMotivo = justificaciones[estudiante_id] ?? studentInfo?.motivo_justificacion ?? "";
+            const motivo = rawMotivo.trim();
+
+            const justificada = (estado === "ausente" && motivo ? 1 : 0) as 0 | 1;
+
+            return {
+                estudiante_id,
+                estado,
+                justificada,
+                motivo_justificacion: justificada ? motivo : null,
+                curso_id: selectedCourseId,
+                fecha: new Date().toISOString().split("T")[0],
+            };
+
+
+
         });
+
 
         await guardarAsistencia({
             curso_id: selectedCourseId,
@@ -82,9 +100,9 @@ const Assistance = () => {
         });
     };
 
-    const presentCount = Object.values(attendance).filter((v) => v === true).length;
-    const absentCount = Object.values(attendance).filter((v) => v === false).length;
-    const lateCount = Object.values(attendance).filter((v) => v === undefined).length;
+    const presentCount = Object.values(attendance).filter((v) => v === "asistencia").length;
+    const absentCount = Object.values(attendance).filter((v) => v === "inasistencia").length;
+    const lateCount = Object.values(attendance).filter((v) => v === "retraso").length;
 
     return (
         <Layout>
@@ -152,17 +170,23 @@ const Assistance = () => {
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
+
                                             <TableHead>Estudiante</TableHead>
                                             <TableHead>ID Estudiante</TableHead>
                                             <TableHead>Tasa de Asistencia</TableHead>
                                             <TableHead className="text-center">Presente</TableHead>
                                             <TableHead className="text-center">Ausente</TableHead>
                                             <TableHead className="text-center">Tardanza</TableHead>
+                                            <TableHead>Justificación</TableHead>
+                                            <TableHead>Observaciones</TableHead>
+
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
                                         {students.map((student) => (
                                             <TableRow key={student.estudiante_id}>
+
+
                                                 <TableCell>
                                                     <div className="flex items-center gap-3">
                                                         <Avatar className="h-8 w-8">
@@ -187,11 +211,11 @@ const Assistance = () => {
 
                                                 <TableCell className="text-center">
                                                     <Checkbox
-                                                        checked={attendance[student.estudiante_id] === true}
+                                                        checked={attendance[student.estudiante_id] === "asistencia"}
                                                         onCheckedChange={() =>
                                                             setAttendance((prev) => ({
                                                                 ...prev,
-                                                                [student.estudiante_id]: true,
+                                                                [student.estudiante_id]: "asistencia"
                                                             }))
                                                         }
                                                     />
@@ -199,11 +223,11 @@ const Assistance = () => {
 
                                                 <TableCell className="text-center">
                                                     <Checkbox
-                                                        checked={attendance[student.estudiante_id] === false}
+                                                        checked={attendance[student.estudiante_id] === "inasistencia"}
                                                         onCheckedChange={() =>
                                                             setAttendance((prev) => ({
                                                                 ...prev,
-                                                                [student.estudiante_id]: false,
+                                                                [student.estudiante_id]: "inasistencia"
                                                             }))
                                                         }
                                                     />
@@ -211,15 +235,46 @@ const Assistance = () => {
 
                                                 <TableCell className="text-center">
                                                     <Checkbox
-                                                        checked={attendance[student.estudiante_id] === undefined}
-                                                        onCheckedChange={() => {
-                                                            setAttendance((prev) => {
-                                                                const newAttendance = { ...prev };
-                                                                delete newAttendance[student.estudiante_id];
-                                                                return newAttendance;
-                                                            });
-                                                        }}
+                                                        checked={attendance[student.estudiante_id] === "retraso"}
+                                                        onCheckedChange={() =>
+                                                            setAttendance((prev) => ({
+                                                                ...prev,
+                                                                [student.estudiante_id]: "retraso"
+                                                            }))
+                                                        }
                                                     />
+                                                </TableCell>
+                                                <TableCell>
+                                                    {attendance[student.estudiante_id] === "inasistencia" ? (
+                                                        <input
+                                                            type="text"
+                                                            className="w-full text-sm px-2 py-1 border rounded"
+                                                            placeholder="Motivo de la justificación"
+                                                            value={
+                                                                justificaciones[student.estudiante_id] ??
+                                                                student.motivo_justificacion ??
+                                                                ""
+                                                            }
+                                                            onChange={(e) =>
+                                                                setJustificaciones((prev) => ({
+                                                                    ...prev,
+                                                                    [student.estudiante_id]: e.target.value,
+                                                                }))
+                                                            }
+                                                        />
+                                                    ) : student.motivo_justificacion ? (
+                                                        <span className="text-muted-foreground text-sm italic">
+                                                            {student.motivo_justificacion}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-muted-foreground text-sm italic">—</span>
+                                                    )}
+                                                </TableCell>
+
+                                                <TableCell>
+                                                    {student.motivo_justificacion
+                                                        ? <span className="text-sm italic text-muted-foreground">{student.motivo_justificacion}</span>
+                                                        : "—"}
                                                 </TableCell>
                                             </TableRow>
                                         ))}

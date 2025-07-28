@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Progress } from '@/components/ui/progress'
 import { useDocenteStore } from '@/store/teachers.store'
 import { Calendar } from 'lucide-react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 const CoursesStadistics = () => {
     const { statsByCurso, fetchCoursesWithStudentsbyTeacher, cousesWithStudentsByTeacer, history } = useDocenteStore()
@@ -15,6 +15,17 @@ const CoursesStadistics = () => {
         const course = cousesWithStudentsByTeacer.find(c => c.curso_id === courseId);
         return course ? course.estudiantes.length : 0;
     }
+
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
+
+    const totalPages = Math.ceil(history.length / itemsPerPage);
+    const paginatedHistory = history.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
+
+
     return (
         <div className="min-h-[600px] grid grid-cols-1  gap-4">
             <Card className="    h-full">
@@ -76,11 +87,11 @@ const CoursesStadistics = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {history.map((action) => (
+                                {paginatedHistory.map((action) => (
                                     <tr key={action.id} className="border-b hover:bg-gray-50">
                                         <td className="py-2 px-3">{action.id}</td>
                                         <td className="py-2 px-3">
-                                            <Badge variant="secondary" className={"bg-amber-100"}>
+                                            <Badge variant="secondary" className="bg-amber-100">
                                                 {action.tipo}
                                             </Badge>
                                         </td>
@@ -89,18 +100,30 @@ const CoursesStadistics = () => {
                                     </tr>
                                 ))}
                             </tbody>
+                            <div className="flex justify-end items-center gap-2 mt-4">
+                                <button
+                                    className="text-sm px-3 py-1 border rounded disabled:opacity-50"
+                                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                                    disabled={currentPage === 1}
+                                >
+                                    Anterior
+                                </button>
+                                <span className="text-sm">
+                                    Página {currentPage} de {totalPages}
+                                </span>
+                                <button
+                                    className="text-sm px-3 py-1 border rounded disabled:opacity-50"
+                                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                                    disabled={currentPage === totalPages}
+                                >
+                                    Siguiente
+                                </button>
+                            </div>
+
                         </table>
                     </div>
-                    {/* <div className="mt-4 flex justify-between items-center text-sm text-gray-500">
-                        <span>Mostrando 5 de {actionsHistory.length} acciones</span>
-                        <Button variant="outline" size="sm">
-                            Ver todas
-                        </Button>
-                    </div> */}
                 </CardContent>
             </Card>
-
-
         </div>
     )
 }

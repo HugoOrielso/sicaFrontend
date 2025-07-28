@@ -8,12 +8,11 @@ export async function guardarAsistencia(
 ): Promise<void> {
   try {
     await api.post('/docentes/guardarAsistencia', payload);
-    toast.success('✅ Asistencia guardada correctamente');
+    toast.success('Asistencia guardada correctamente');
     setTimeout(()=>{
       location.reload()
     },2000)
   } catch (error) {
-    console.error('❌ Error al guardar asistencia', error);
     toast.error('Error al guardar asistencia');
     throw error;
   }

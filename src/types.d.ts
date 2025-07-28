@@ -23,6 +23,8 @@ export interface Estudiante {
   email: string;
   inasistencias: number;
   asistencia_hoy?: 'asistencia' | 'inasistencia' | 'retraso' | null;
+  motivo_justificacion?: string | null;
+  justificada?: 0 | 1;
 }
 
 export interface CursoConEstudiantes {
@@ -32,13 +34,17 @@ export interface CursoConEstudiantes {
 }
 
 
-// types/asistencia.ts
 export type EstadoAsistencia = 'presente' | 'ausente' | 'tardanza';
 
 export interface RegistroAsistencia {
   estudiante_id: string;
   estado: EstadoAsistencia;
+  justificada: 0 | 1;
+  motivo_justificacion: string | null;
+  curso_id: string;
+  fecha: string;
 }
+
 
 export interface PayloadGuardarAsistencia {
   curso_id: string;
@@ -47,22 +53,35 @@ export interface PayloadGuardarAsistencia {
 
 
 export interface SpecificCourse {
-  curso_id: string
-  curso_nombre: string
-  horario: string
-  fecha_inicio: string
-  fecha_fin: string
+  curso_id: string;
+  curso_nombre: string;
+  horario: string;
+  fecha_inicio: string;
+  fecha_fin: string;
   estudiantes: {
-    estudiante_id: string
-    nombre: string
-    email: string
-    tipo_asistencia?: 'asistencia' | 'inasistencia' | 'retraso' | null
-  }[]
+    estudiante_id: string;
+    nombre: string;
+    email: string;
+    tipo_asistencia?: 'asistencia' | 'inasistencia' | 'retraso' | null;
+  }[];
   asistencia_hoy: {
-    asistencia: number
-    inasistencia: number
-    retraso: number
-  }
+    conteo: {
+      asistencia: number;
+      inasistencia_justificada: number;
+      inasistencia_injustificada: number;
+      retraso: number;
+    };
+    porcentaje: {
+      asistencia: number;
+      inasistencia_justificada: number;
+      inasistencia_injustificada: number;
+      retraso: number;
+    };
+  };
+  asistencia_historica: {
+    tipo_ajustado: 'asistencia' | 'inasistencia_justificada' | 'inasistencia_injustificada' | 'retraso';
+    porcentaje: string;
+  }[];
 }
 
 
@@ -106,7 +125,6 @@ export interface CursosConEstudiantesResponse {
   data: CursoConEstudiantes[];
   resumen: ResumenGlobal;
 }
-
 
 interface Docente {
   id: string;

@@ -1,3 +1,4 @@
+import { GraficoPastelAsistencia } from "@/components/Grafico"
 import Layout from "@/components/Teachers/Layout"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -59,7 +60,7 @@ const Course = () => {
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-2">
-                                {Array.isArray(specificCourse.estudiantes) && specificCourse.estudiantes.length  ? (
+                                {Array.isArray(specificCourse.estudiantes) && specificCourse.estudiantes.length ? (
                                     specificCourse.estudiantes.map((est) => (
                                         <div
                                             className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border"
@@ -111,15 +112,22 @@ const Course = () => {
                                         <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                                         <span className="text-sm font-medium">Asistencia</span>
                                     </div>
-                                    <span className="text-2xl font-bold text-green-600"> {specificCourse.asistencia_hoy.asistencia} </span>
+                                    <span className="text-2xl font-bold text-green-600"> {specificCourse.asistencia_hoy.conteo.asistencia} </span>
                                 </div>
 
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center space-x-2">
                                         <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                                        <span className="text-sm font-medium">Inasistencia</span>
+                                        <span className="text-sm font-medium">Inasistencia injustificada</span>
                                     </div>
-                                    <span className="text-2xl font-bold text-red-600">{specificCourse.asistencia_hoy.inasistencia}</span>
+                                    <span className="text-2xl font-bold text-red-600">{specificCourse.asistencia_hoy.conteo.inasistencia_injustificada}</span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center space-x-2">
+                                        <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                                        <span className="text-sm font-medium">Inasistencia justificada</span>
+                                    </div>
+                                    <span className="text-2xl font-bold text-red-600">{specificCourse.asistencia_hoy.conteo.inasistencia_justificada}</span>
                                 </div>
 
                                 <div className="flex items-center justify-between">
@@ -127,61 +135,48 @@ const Course = () => {
                                         <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
                                         <span className="text-sm font-medium">Retrasos</span>
                                     </div>
-                                    <span className="text-2xl font-bold text-orange-600">{specificCourse.asistencia_hoy.retraso}</span>
+                                    <span className="text-2xl font-bold text-orange-600">{specificCourse.asistencia_hoy.conteo.retraso}</span>
                                 </div>
-                            </div>
-
-                            <Separator />
-
-                            <div className="space-y-2">
-                                <div className="flex justify-between text-sm">
-                                    <span>Asistencia Total</span>
-                                    <span className="font-medium">{specificCourse.asistencia_hoy.asistencia}</span>
-                                </div>
-                                <Progress value={specificCourse.asistencia_hoy.asistencia * 100} className="h-2" />
-                            </div>
-                            <div className="space-y-2">
-                                <div className="flex justify-between text-sm">
-                                    <span>Inasistencia Total</span>
-                                    <span className="font-medium">{specificCourse.asistencia_hoy.inasistencia}</span>
-                                </div>
-                                <Progress value={specificCourse.asistencia_hoy.inasistencia * 100} className="h-2" />
-                            </div>
-                            <div className="space-y-2">
-                                <div className="flex justify-between text-sm">
-                                    <span>Retraso Total</span>
-                                    <span className="font-medium">{specificCourse.asistencia_hoy.retraso}</span>
-                                </div>
-                                <Progress value={specificCourse.asistencia_hoy.retraso * 100} className="h-2" />
                             </div>
 
                             <Separator />
 
                             <div className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center space-x-2">
-                                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                                        <span className="text-sm font-medium">Asistencia</span>
-                                    </div>
-                                    <span className="text-2xl font-bold text-green-600"> {specificCourse.asistencia_hoy.asistencia * 100}% </span>
-                                </div>
-
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center space-x-2">
-                                        <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                                        <span className="text-sm font-medium">Inasistencia</span>
-                                    </div>
-                                    <span className="text-2xl font-bold text-red-600">{specificCourse.asistencia_hoy.inasistencia * 100}%</span>
-                                </div>
-
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center space-x-2">
-                                        <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-                                        <span className="text-sm font-medium">Retrasos</span>
-                                    </div>
-                                    <span className="text-2xl font-bold text-orange-600">{specificCourse.asistencia_hoy.retraso * 100}%</span>
-                                </div>
+                                <GraficoPastelAsistencia data={specificCourse.asistencia_historica} />
                             </div>
+
+
+                            <Separator />
+                            <div className="space-y-2">
+                                <div className="flex justify-between text-sm">
+                                    <span>Asistencia Total</span>
+                                    <span className="font-medium">{specificCourse.asistencia_hoy.porcentaje.asistencia}</span>
+                                </div>
+                                <Progress value={specificCourse.asistencia_hoy.porcentaje.asistencia} className="h-2" />
+                            </div>
+                            <div className="space-y-2">
+                                <div className="flex justify-between text-sm">
+                                    <span>Inasistencia injustificada</span>
+                                    <span className="font-medium">{specificCourse.asistencia_hoy.porcentaje.inasistencia_injustificada}</span>
+                                </div>
+                                <Progress value={specificCourse.asistencia_hoy.porcentaje.inasistencia_injustificada} className="h-2" />
+                            </div>
+                            <div className="space-y-2">
+                                <div className="flex justify-between text-sm">
+                                    <span>Inasistencia justificada</span>
+                                    <span className="font-medium">{specificCourse.asistencia_hoy.porcentaje.inasistencia_justificada}</span>
+                                </div>
+                                <Progress value={specificCourse.asistencia_hoy.porcentaje.inasistencia_justificada} className="h-2" />
+                            </div>
+                            <div className="space-y-2">
+                                <div className="flex justify-between text-sm">
+                                    <span>Retraso Total</span>
+                                    <span className="font-medium">{specificCourse.asistencia_hoy.porcentaje.retraso}</span>
+                                </div>
+                                <Progress value={specificCourse.asistencia_hoy.porcentaje.retraso} className="h-2" />
+                            </div>
+
+
                         </CardContent>
                     </Card>
                 </div>

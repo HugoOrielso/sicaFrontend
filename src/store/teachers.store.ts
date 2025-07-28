@@ -11,7 +11,7 @@ interface DocenteState {
     loading: boolean
     history: History[]
     error: string | null
-    statsAssistance: { asistencia: number, inasistencia: number, retraso: number }
+    statsAssistance: { tipo_ajustado: string, porcentaje: string }[]
     statsByCurso: CursoStats[]
     cousesWithStudentsByTeacer: CursoConEstudiantes[]
     specificCourse: SpecificCourse | null
@@ -31,7 +31,7 @@ export const useDocenteStore = create<DocenteState>((set) => ({
     loading: false,
     error: null,
     history: [],
-    statsAssistance: { asistencia: 0, inasistencia: 0, retraso: 0 },
+    statsAssistance: [],
     statsByCurso: [],
     cousesWithStudentsByTeacer: [],
     specificCourse: null,
@@ -60,17 +60,14 @@ export const useDocenteStore = create<DocenteState>((set) => ({
         try {
             const res = await api.get('/docentes/statsAssistance');
             if (res.status === 204) {
-                set({ statsAssistance: { asistencia: 0, inasistencia: 0, retraso: 0 }, loading: false });
+                set({ statsAssistance: [], loading: false });
                 return;
             }
 
-            const stats = res.data.estadisticas.reduce(
-                (acc: { [key: string]: number }, item: { tipo: string; porcentaje: number }) => {
-                    acc[item.tipo] = item.porcentaje;
-                    return acc;
-                },
-                { asistencia: 0, inasistencia: 0, retraso: 0 }
-            );
+            const stats = res.data.estadisticas.map((item: { tipo_ajustado: string, porcentaje: string }) => ({
+                tipo_ajustado: item.tipo_ajustado,
+                porcentaje: item.porcentaje
+            }));
 
             set({ statsAssistance: stats, loading: false });
 
@@ -136,7 +133,7 @@ export const useDocenteStore = create<DocenteState>((set) => ({
         set({ loading: true, error: null });
         try {
             const request = await api.get('/users/history');
-
+            
             if (request.status === 204) {
                 set({ history: [], loading: false });
                 return;

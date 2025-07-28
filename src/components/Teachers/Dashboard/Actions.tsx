@@ -108,9 +108,9 @@ const Actions = () => {
                 setTimeout(() => {
                     window.location.reload()
                 }, 1000)
-                toast.success('Profesor creado exitosamente')
+                toast.success('Estudiante creado exitosamente')
             } else {
-                toast.error(request.data.message || 'Error al crear el profesor')
+                toast.error(request.data.message || 'Error al crear el estudiante')
             }
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error) {
