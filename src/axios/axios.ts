@@ -10,7 +10,7 @@ interface FailedRequest {
 }
 
 const api: AxiosInstance = axios.create({
-    baseURL: 'http://localhost:4321/api', // Cambia según tu entorno
+    baseURL: import.meta.env.VITE_API_URL, // Cambia según tu entorno
     withCredentials: true, // Enviar cookies (refreshToken)
 });
 

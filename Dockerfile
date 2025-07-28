@@ -1,18 +1,15 @@
-# Etapa 1: Build
-FROM node:18-alpine as build
+FROM node:20-alpine
 
 WORKDIR /app
-COPY package*.json ./
-RUN npm install
+
+# Copiar proyecto completo
 COPY . .
-RUN npm run build
 
-# Etapa 2: Producción
-FROM nginx:stable-alpine
-COPY --from=build /app/build /usr/share/nginx/html
+# Copiar y dar permisos al entrypoint
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
-# Copiar configuración opcional de nginx
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Puerto que usará `serve`
+EXPOSE 3000
 
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+ENTRYPOINT ["/entrypoint.sh"]
